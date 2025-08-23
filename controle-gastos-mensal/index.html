@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro Pessoal</title>
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Controle Financeiro Pessoal</h1>
+            <div class="controle-mes">
+                <label for="selecionar-mes">Mês:</label>
+                <select id="selecionar-mes">
+                    <!-- Os meses serão carregados via JavaScript -->
+                </select>
+                <button id="novo-mes">Novo Mês</button>
+            </div>
+        </header>
+
+        <nav class="abas">
+            <button class="aba ativa" data-aba="configuracao">Configuração</button>
+            <button class="aba" data-aba="adicionar">Adicionar Gasto</button>
+            <button class="aba" data-aba="visualizar">Visualizar Gastos</button>
+            <button class="aba" data-aba="relatorios">Relatórios</button>
+        </nav>
+
+        <main>
+            <!-- Aba de Configuração -->
+            <div id="conteudo-configuracao" class="conteudo-aba ativa">
+                <section class="secao">
+                    <h2>Configuração do Mês</h2>
+                    <div class="form-group">
+                        <label for="salario">Salário do Mês (R$):</label>
+                        <input type="number" id="salario" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="outras-receitas">Outras Receitas (R$):</label>
+                        <input type="number" id="outras-receitas" step="0.01" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="saldo-anterior">Saldo do Mês Anterior (R$):</label>
+                        <input type="number" id="saldo-anterior" step="0.01" min="0" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="total-receitas">Total de Receitas (R$):</label>
+                        <input type="number" id="total-receitas" step="0.01" min="0" readonly>
+                    </div>
+                    <button id="salvar-configuracao">Salvar Configuração</button>
+                    <div id="status-configuracao" class="status"></div>
+                </section>
+            </div>
+
+            <!-- Aba de Adicionar Gasto -->
+            <div id="conteudo-adicionar" class="conteudo-aba">
+                <section class="secao">
+                    <h2>Adicionar Gasto/Receita</h2>
+                    <form id="form-movimentacao">
+                        <div class="form-group">
+                            <label for="tipo">Tipo:</label>
+                            <select id="tipo" required>
+                                <option value="gasto">Gasto</option>
+                                <option value="receita">Receita</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="data">Data:</label>
+                            <input type="date" id="data" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="valor">Valor (R$):</label>
+                            <input type="number" id="valor" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="descricao">Descrição:</label>
+                            <input type="text" id="descricao" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="meio-pagamento">Meio de Pagamento:</label>
+                            <select id="meio-pagamento" required>
+                                <option value="">Selecione...</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Bradesco">Cartão Bradesco</option>
+                                <option value="C6 Bank">Cartão C6 Bank</option>
+                                <option value="Nubank">Cartão Nubank</option>
+                                <option value="Caixa">Caixa</option>
+                                <option value="99pay">99Pay</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Luana">Luana</option>
+                                <option value="Leonardo">Leonardo</option>
+                                <option value="Cirene">Cirene</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pessoa">Pessoa:</label>
+                            <select id="pessoa" required>
+                                <option value="">Selecione...</option>
+                                <option value="Eduardo">Eduardo</option>
+                                <option value="Luana">Luana</option>
+                                <option value="Cirene">Cirene</option>
+                                <option value="Leonardo">Leonardo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="categoria">Categoria:</label>
+                            <select id="categoria" required>
+                                <option value="">Selecione...</option>
+                                <option value="Combustivel">Combustível</option>
+                                <option value="Investimento">Investimento</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Saude">Saúde</option>
+                                <option value="Mercado">Mercado</option>
+                                <option value="Viagem">Viagem</option>
+                                <option value="Estudos">Estudos</option>
+                                <option value="Conta Residencial">Conta Residencial</option>
+                                <option value="Comer Fora">Comer Fora</option>
+                                <option value="Ifood">Ifood</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Roupas">Roupas</option>
+                                <option value="Compras">Compras</option>
+                                <option value="Servicos">Serviços</option>
+                                <option value="Carro">Carro</option>
+                                <option value="Salario">Salário</option>
+                                <option value="Extra">Extra</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="parcelas">Parcelado (quantidade de parcelas):</label>
+                            <input type="number" id="parcelas" min="1" value="1">
+                            <small>Para gastos parcelados, informe o número de parcelas</small>
+                        </div>
+                        
+                        <button type="submit">Adicionar</button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Aba de Visualizar Gastos -->
+            <div id="conteudo-visualizar" class="conteudo-aba">
+                <section class="secao">
+                    <h2>Resumo Financeiro</h2>
+                    <div class="resumo-cards">
+                        <div class="card">
+                            <h3>Total de Receitas</h3>
+                            <p id="total-receitas-card">R$ 0,00</p>
+                        </div>
+                        <div class="card">
+                            <h3>Total de Gastos</h3>
+                            <p id="total-gastos-card">R$ 0,00</p>
+                        </div>
+                        <div class="card">
+                            <h3>Saldo do Mês</h3>
+                            <p id="saldo-mes-card">R$ 0,00</p>
+                        </div>
+                        <div class="card">
+                            <h3>Parcelas Pendentes</h3>
+                            <p id="parcelas-pendentes">0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="secao">
+                    <h2>Movimentações Detalhadas</h2>
+                    <div class="filtros">
+                        <input type="text" id="filtro-descricao" placeholder="Filtrar por descrição...">
+                        <select id="filtro-tipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="gasto">Gastos</option>
+                            <option value="receita">Receitas</option>
+                        </select>
+                        <select id="filtro-categoria">
+                            <option value="">Todas as categorias</option>
+                        </select>
+                        <select id="filtro-pessoa">
+                            <option value="">Todas as pessoas</option>
+                        </select>
+                    </div>
+                    <table id="tabela-movimentacoes">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Descrição</th>
+                                <th>Meio</th>
+                                <th>Pessoa</th>
+                                <th>Categoria</th>
+                                <th>Parcelas</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+
+            <!-- Aba de Relatórios -->
+            <div id="conteudo-relatorios" class="conteudo-aba">
+                <section class="secao">
+                    <h2>Análises</h2>
+                    <div class="analise-container">
+                        <div class="analise-item">
+                            <h3>Gastos por Categoria</h3>
+                            <ul id="gastos-por-categoria">
+                            </ul>
+                        </div>
+                        <div class="analise-item">
+                            <h3>Gastos por Pessoa</h3>
+                            <ul id="gastos-por-pessoa">
+                            </ul>
+                        </div>
+                        <div class="analise-item">
+                            <h3>Gastos por Meio de Pagamento</h3>
+                            <ul id="gastos-por-pagamento">
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="secao">
+                    <h2>Parcelamentos Futuros</h2>
+                    <div id="parcelamentos-futuros">
+                        <p>Nenhum parcelamento futuro encontrado.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
