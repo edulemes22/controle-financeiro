@@ -1,0 +1,73 @@
+<section class="secao">
+    <h2>Adicionar Gasto</h2>
+    <form id="form-gasto">
+        <div class="form-group">
+            <label for="data">Data:</label>
+            <input type="date" id="data" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="valor">Valor (R$):</label>
+            <input type="number" id="valor" step="0.01" min="0" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="descricao">Descrição:</label>
+            <input type="text" id="descricao" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="meio-pagamento">Meio de Pagamento:</label>
+            <select id="meio-pagamento" required>
+                <option value="">Selecione...</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Bradesco">Cartão Bradesco</option>
+                <option value="C6 Bank">Cartão C6 Bank</option>
+                <option value="Nubank">Cartão Nubank</option>
+                <option value="Pix">Pix</option>
+                <option value="Outro">Outro</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="pessoa">Pessoa:</label>
+            <select id="pessoa" required>
+                <option value="">Selecione...</option>
+                <option value="Eduardo">Eduardo</option>
+                <option value="Luana">Luana</option>
+                <option value="Cirene">Cirene</option>
+                <option value="Leonardo">Leonardo</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="categoria">Categoria:</label>
+            <select id="categoria" required>
+                <option value="">Selecione...</option>
+                <option value="Combustivel">Combustível</option>
+                <option value="Investimento">Investimento</option>
+                <option value="Moradia">Moradia</option>
+                <option value="Saude">Saúde</option>
+                <option value="Mercado">Mercado</option>
+                <option value="Viagem">Viagem</option>
+                <option value="Estudos">Estudos</option>
+                <option value="Conta Residencial">Conta Residencial</option>
+                <option value="Comer Fora">Comer Fora</option>
+                <option value="Ifood">Ifood</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Roupas">Roupas</option>
+                <option value="Compras">Compras</option>
+                <option value="Servicos">Serviços</option>
+                <option value="Carro">Carro</option>
+                <option value="Outros">Outros</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="parcelas">Parcelado/Recorrente (quantidade de parcelas):</label>
+            <input type="number" id="parcelas" min="0" value="1">
+        </div>
+        
+        <button type="submit">Adicionar Gasto</button>
+    </form>
+</section>
