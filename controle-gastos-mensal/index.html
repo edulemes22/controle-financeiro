@@ -20,9 +20,9 @@
         </header>
 
         <nav class="abas">
-            <button class="aba ativa" data-aba="configuracao">Configuração</button>
+            <button class="aba" data-aba="configuracao">Configuração</button>
             <button class="aba" data-aba="adicionar">Adicionar Gasto</button>
-            <button class="aba" data-aba="visualizar">Visualizar Gastos</button>
+            <button class="aba ativa" data-aba="visualizar">Visualizar Gastos</button>
             <button class="aba" data-aba="relatorios">Relatórios</button>
         </nav>
 
@@ -178,11 +178,14 @@
                             <option value="gasto">Gastos</option>
                             <option value="receita">Receitas</option>
                         </select>
-                        <select id="filtro-categoria">
-                            <option value="">Todas as categorias</option>
+                        <select id="filtro-meio-pagamento">
+                            <option value="">Todas os meios de pagamento</option>
                         </select>
                         <select id="filtro-pessoa">
                             <option value="">Todas as pessoas</option>
+                        </select>
+                        <select id="filtro-categoria">
+                            <option value="">Todas as categorias</option>
                         </select>
                     </div>
                     <table id="tabela-movimentacoes">
@@ -201,6 +204,15 @@
                         </thead>
                         <tbody>
                         </tbody>
+                        <tfoot id="tabela-footer">
+                            <tr>
+                                <td colspan="2">Total de Gastos:</td>
+                                <td id="total-gastos-footer"></td>
+                                <td colspan="6">
+                                    <div class="paginacao" id="paginacao-container"></div>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </section>
             </div>

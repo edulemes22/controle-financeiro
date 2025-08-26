@@ -2,6 +2,8 @@
 let meses = {};
 let mesAtual = '';
 let mesSelecionado = '';
+let paginaAtual = 1;
+const itensPorPagina = 10;
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
@@ -87,6 +89,7 @@ function configurarEventListeners() {
     document.getElementById('filtro-tipo').addEventListener('change', filtrarMovimentacoes);
     document.getElementById('filtro-categoria').addEventListener('change', filtrarMovimentacoes);
     document.getElementById('filtro-pessoa').addEventListener('change', filtrarMovimentacoes);
+    document.getElementById('filtro-meio-pagamento').addEventListener('change', filtrarMovimentacoes);
 }
 
 // Inicializar o mês
@@ -357,7 +360,7 @@ function atualizarInterface() {
     atualizarResumo();
     
     // Atualizar tabela
-    preencherTabelaMovimentacoes();
+    preencherTabelaMovimentacoesPaginada();
     
     // Atualizar análises
     atualizarAnalises();
@@ -402,47 +405,6 @@ function atualizarResumo() {
     } else {
         document.getElementById('saldo-mes-card').style.color = '#2c3e50';
     }
-}
-
-// Preencher tabela de movimentações
-function preencherTabelaMovimentacoes() {
-    const tbody = document.getElementById('tabela-movimentacoes').querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    // Verificar se existem movimentações
-    if (!meses[mesSelecionado] || !meses[mesSelecionado].movimentacoes) {
-        return;
-    }
-    
-    const movimentacoes = meses[mesSelecionado].movimentacoes;
-    
-    movimentacoes.forEach(movimentacao => {
-        const tr = document.createElement('tr');
-        
-        tr.innerHTML = `
-            <td>${formatarData(movimentacao.data)}</td>
-            <td>${movimentacao.tipo === 'receita' ? 'Receita' : 'Gasto'}</td>
-            <td class="${movimentacao.tipo}">${formatarMoeda(movimentacao.valor)}</td>
-            <td>${movimentacao.descricao}</td>
-            <td>${movimentacao.meioPagamento}</td>
-            <td>${movimentacao.pessoa}</td>
-            <td>${movimentacao.categoria}</td>
-            <td>${movimentacao.parcelas ? `${movimentacao.parcelas.atual}/${movimentacao.parcelas.total}` : 'À vista'}</td>
-            <td>
-                <button class="btn-excluir" data-id="${movimentacao.id}">Excluir</button>
-            </td>
-        `;
-        
-        tbody.appendChild(tr);
-    });
-    
-    // Adicionar event listeners aos botões de excluir
-    document.querySelectorAll('.btn-excluir').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            excluirMovimentacao(id);
-        });
-    });
 }
 
 // Excluir movimentação
@@ -530,8 +492,11 @@ function atualizarGastosPorPagamento() {
     }
     
     const movimentacoes = meses[mesSelecionado].movimentacoes;
-    const gastos = movimentacoes.filter(m => m.tipo === 'gasto');
+    const gastos = movimentacoes.filter(m => m.tipo === 'gasto' && m.pessoa === 'Eduardo');
+    const gastosBradescoTotal = movimentacoes.filter(m => m.tipo === 'gasto' && m.meioPagamento === 'Bradesco').reduce((sum, m) => sum + Math.abs(m.valor), 0);
     const pagamentos = {};
+
+    pagamentos['Bradesco TotaL'] = gastosBradescoTotal; // Adiciona o total de Bradesco diretamente
     
     gastos.forEach(gasto => {
         if (!pagamentos[gasto.meioPagamento]) {
@@ -560,6 +525,7 @@ function atualizarParcelamentosFuturos() {
     const movimentacoes = meses[mesSelecionado].movimentacoes;
     const parcelamentos = movimentacoes.filter(m => m.parcelas && m.parcelas.total > 1);
     var totalValorParcelamentos = 0;
+    var totalValorParcelamentosEduardo = 0;
     
     if (parcelamentos.length === 0) {
         container.innerHTML = '<p>Nenhum parcelamento futuro encontrado.</p>';
@@ -568,6 +534,9 @@ function atualizarParcelamentosFuturos() {
     
     let html = '<div class="parcelamento-info">';
     parcelamentos.forEach(p => {
+        if (p.pessoa === 'Eduardo') {
+            totalValorParcelamentosEduardo += Math.abs(p.valor);
+        }
         totalValorParcelamentos += Math.abs(p.valor);
         const parcelasRestantes = p.parcelas.total - (p.parcelas.pagas || 1);
         if (parcelasRestantes > 0) {
@@ -580,6 +549,7 @@ function atualizarParcelamentosFuturos() {
             `;
         }
     });
+    html += `<div class="parcelamento-total">Total Eduardo: ${formatarMoeda(totalValorParcelamentosEduardo)}</div>`;
     html += `<div class="parcelamento-total">Total: ${formatarMoeda(totalValorParcelamentos)}</div>`;
     html += '</div>';
     
@@ -590,6 +560,7 @@ function atualizarParcelamentosFuturos() {
 function configurarFiltros() {
     const categoriasFiltro = document.getElementById('filtro-categoria');
     const pessoasFiltro = document.getElementById('filtro-pessoa');
+    const meioPagamentoFiltro = document.getElementById('filtro-meio-pagamento');
     
     // Limpar opções existentes (exceto a primeira)
     while (categoriasFiltro.options.length > 1) {
@@ -598,6 +569,10 @@ function configurarFiltros() {
     
     while (pessoasFiltro.options.length > 1) {
         pessoasFiltro.remove(1);
+    }
+
+    while (meioPagamentoFiltro.options.length > 1) {
+        meioPagamentoFiltro.remove(1);
     }
     
     // Verificar se existem movimentações
@@ -624,6 +599,14 @@ function configurarFiltros() {
         option.textContent = pessoa;
         pessoasFiltro.appendChild(option);
     });
+
+    const meiosPagamentoUnicos = [...new Set(movimentacoes.map(m => m.meioPagamento))];
+    meiosPagamentoUnicos.forEach(meio => {
+        const option = document.createElement('option');
+        option.value = meio;
+        option.textContent = meio;
+        meioPagamentoFiltro.appendChild(option);
+    });
 }
 
 // Filtrar movimentações
@@ -632,9 +615,12 @@ function filtrarMovimentacoes() {
     const tipoFiltro = document.getElementById('filtro-tipo').value;
     const categoriaFiltro = document.getElementById('filtro-categoria').value;
     const pessoaFiltro = document.getElementById('filtro-pessoa').value;
+    const meioPagamentoFiltro = document.getElementById('filtro-meio-pagamento').value;
     
     const tbody = document.getElementById('tabela-movimentacoes').querySelector('tbody');
     const linhas = tbody.querySelectorAll('tr');
+
+    var totalGastosFiltrados = 0;
     
     linhas.forEach(linha => {
         const descricao = linha.cells[3].textContent.toLowerCase();
@@ -646,13 +632,20 @@ function filtrarMovimentacoes() {
         const correspondeTipo = !tipoFiltro || (tipoFiltro === 'gasto' && tipo === 'gasto') || (tipoFiltro === 'receita' && tipo === 'receita');
         const correspondeCategoria = !categoriaFiltro || categoria === categoriaFiltro;
         const correspondePessoa = !pessoaFiltro || pessoa === pessoaFiltro;
+        const correspondeMeioPagamento = !meioPagamentoFiltro || linha.cells[4].textContent === meioPagamentoFiltro;
         
-        if (correspondeDescricao && correspondeTipo && correspondeCategoria && correspondePessoa) {
+        if (correspondeDescricao && correspondeTipo && correspondeCategoria && correspondePessoa && correspondeMeioPagamento) {
             linha.style.display = '';
         } else {
             linha.style.display = 'none';
         }
+        // Calcular total de gastos filtrados
+        if (linha.style.display !== 'none' && linha.cells[1].textContent.toLowerCase() === 'gasto') {
+            totalGastosFiltrados += Math.abs(parseFloat(linha.cells[2].textContent.replace('R$', '').replace('.', '').replace(',', '.')));
+        }
     });
+
+    document.getElementById('total-gastos-footer').textContent = formatarMoeda(totalGastosFiltrados);
 }
 
 // Funções auxiliares
@@ -695,4 +688,141 @@ function formatarNomeMes(mes) {
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
     return `${meses[parseInt(mesNum) - 1]} de ${ano}`;
+}
+
+// Função para paginar movimentações
+function paginarMovimentacoes(movimentacoes, pagina, itensPorPagina) {
+    const inicio = (pagina - 1) * itensPorPagina;
+    return movimentacoes.slice(inicio, inicio + itensPorPagina);
+}
+
+// Atualizar tabela de movimentações com paginação
+function preencherTabelaMovimentacoesPaginada() {
+    const tbody = document.getElementById('tabela-movimentacoes').querySelector('tbody');
+    tbody.innerHTML = '';
+
+    if (!meses[mesSelecionado] || !meses[mesSelecionado].movimentacoes) {
+        return;
+    }
+
+    const movimentacoes = meses[mesSelecionado].movimentacoes;
+    // Corrige para pegar o valor atualizado do seletor
+    const seletor = document.getElementById('itens-por-pagina-select');
+    let itensPorPaginaAtual = itensPorPagina;
+    if (seletor) {
+        itensPorPaginaAtual = parseInt(seletor.value, 10) || itensPorPagina;
+    }
+
+    const movimentacoesPaginadas = paginarMovimentacoes(movimentacoes, paginaAtual, itensPorPaginaAtual);
+
+    let totalGastos = 0;
+
+    movimentacoesPaginadas.forEach(movimentacao => {
+        if (movimentacao.tipo === 'gasto') {
+            totalGastos += Math.abs(movimentacao.valor);
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${formatarData(movimentacao.data)}</td>
+            <td>${movimentacao.tipo === 'receita' ? 'Receita' : 'Gasto'}</td>
+            <td class="${movimentacao.tipo}">${formatarMoeda(movimentacao.valor)}</td>
+            <td>${movimentacao.descricao}</td>
+            <td>${movimentacao.meioPagamento}</td>
+            <td>${movimentacao.pessoa}</td>
+            <td>${movimentacao.categoria}</td>
+            <td>${movimentacao.parcelas ? `${movimentacao.parcelas.atual}/${movimentacao.parcelas.total}` : 'À vista'}</td>
+            <td>
+                <button class="btn-excluir" data-id="${movimentacao.id}">Excluir</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-excluir').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            excluirMovimentacao(id);
+        });
+    });
+
+    document.getElementById('total-gastos-footer').textContent = formatarMoeda(totalGastos);
+
+    atualizarPaginacao(movimentacoes.length);
+}
+
+// Função para atualizar controles de paginação (mostra só 3 botões de página por vez)
+function atualizarPaginacao(totalItens) {
+    const paginacaoContainer = document.getElementById('paginacao-container');
+    paginacaoContainer.innerHTML = '';
+
+    // Adiciona seletor de quantidade de itens por página
+    let seletor = document.getElementById('itens-por-pagina-select');
+    if (!seletor) {
+        seletor = document.createElement('select');
+        seletor.id = 'itens-por-pagina-select';
+        [5, 10, 20, 50, 100].forEach(qtd => {
+            const option = document.createElement('option');
+            option.value = qtd;
+            option.textContent = `${qtd} por página`;
+            if (qtd === itensPorPagina) option.selected = true;
+            seletor.appendChild(option);
+        });
+        seletor.addEventListener('change', function() {
+            // Atualiza a variável global e recarrega a tabela
+            window.itensPorPagina = parseInt(this.value, 10);
+            paginaAtual = 1;
+            //itensPorPagina = parseInt(this.value, 10);
+            preencherTabelaMovimentacoesPaginada();
+        });
+    }
+    paginacaoContainer.appendChild(seletor);
+
+    // Usa o valor atualizado do seletor para calcular totalPaginas
+    const itensPorPaginaAtual = parseInt(seletor.value, 10) || itensPorPagina;
+    const totalPaginas = Math.ceil(totalItens / itensPorPaginaAtual);
+
+    if (totalPaginas <= 1) return;
+
+    const btnAnterior = document.createElement('button');
+    btnAnterior.textContent = 'Anterior';
+    btnAnterior.disabled = paginaAtual === 1;
+    btnAnterior.addEventListener('click', () => {
+        if (paginaAtual > 1) {
+            paginaAtual--;
+            preencherTabelaMovimentacoesPaginada();
+        }
+    });
+    paginacaoContainer.appendChild(btnAnterior);
+
+    // Lógica para mostrar só 3 botões de página
+    let start = Math.max(1, paginaAtual - 1);
+    let end = Math.min(totalPaginas, start + 2);
+
+    // Ajusta o início se estiver no final
+    if (end - start < 2) {
+        start = Math.max(1, end - 2);
+    }
+
+    for (let i = start; i <= end; i++) {
+        const btnPagina = document.createElement('button');
+        btnPagina.textContent = i;
+        btnPagina.className = i === paginaAtual ? 'pagina-ativa' : '';
+        btnPagina.addEventListener('click', () => {
+            paginaAtual = i;
+            preencherTabelaMovimentacoesPaginada();
+        });
+        paginacaoContainer.appendChild(btnPagina);
+    }
+
+    const btnProximo = document.createElement('button');
+    btnProximo.textContent = 'Próximo';
+    btnProximo.disabled = paginaAtual === totalPaginas;
+    btnProximo.addEventListener('click', () => {
+        if (paginaAtual < totalPaginas) {
+            paginaAtual++;
+            preencherTabelaMovimentacoesPaginada();
+        }
+    });
+    paginacaoContainer.appendChild(btnProximo);
 }

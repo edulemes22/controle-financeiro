@@ -301,3 +301,24 @@ tr:hover {
     margin: 10px 8px 0px 0px;
     text-align: right;
 }
+
+#tabela-footer {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.paginacao {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagina-ativa {
+    background-color: #033455;
+    color: white;
+}
+
+#itens-por-pagina-select {
+    width: auto;
+}
